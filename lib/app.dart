@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-import 'main.dart';
+import 'prsenter/pages/todo_list_page.dart';
+import 'prsenter/pages/login_page.dart';
+import 'prsenter/pages/my_page.dart';
+import 'prsenter/pages/signup_page.dart';
+
 class BasePage extends StatelessWidget {
   final Widget child;
   BasePage({required this.child});
