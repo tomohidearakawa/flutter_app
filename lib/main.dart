@@ -150,7 +150,6 @@ class LoginPage extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () async {
-              // ログイン処理
               try {
                 UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
                   email: emailController.text,
@@ -158,8 +157,10 @@ class LoginPage extends StatelessWidget {
                 );
                 Navigator.pushReplacementNamed(context, '/'); // ホームページに遷移
               } on FirebaseAuthException catch (e) {
-                // エラー処理
-                print(e.message);
+                // エラーメッセージを表示
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('ログインエラー: ${e.message}')),
+                );
               }
             },
             child: Text('ログイン'),
@@ -169,6 +170,7 @@ class LoginPage extends StatelessWidget {
     );
   }
 }
+
 
 class SignUpPage extends StatelessWidget {
   final TextEditingController emailController = TextEditingController();
