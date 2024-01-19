@@ -4,6 +4,7 @@ import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_app/prsenter/pages/todo_list_page.dart'; // GoalItem クラスのインポート
 import 'package:intl/intl.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; 
 
 class WorkCategoryPage extends StatefulWidget {
   final String category;
@@ -72,7 +73,25 @@ class GoalDetailPage extends StatefulWidget {
 }
 
 class _GoalDetailPageState extends State<GoalDetailPage> {
-  final TextEditingController commentController = TextEditingController();
+    final TextEditingController commentController = TextEditingController();
+    String username = '匿名ユーザー';
+
+    @override
+    void initState() {
+      super.initState();
+      fetchUserData();
+    }
+
+    Future<void> fetchUserData() async {
+      User? currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser != null) {
+        // Firestoreからユーザー情報を取得
+        var userDocument = await FirebaseFirestore.instance.collection('users').doc(currentUser.uid).get();
+        setState(() {
+          username = userDocument.data()?['username'] ?? '匿名ユーザー';
+        });
+      }
+    }
 
   @override
   Widget build(BuildContext context) {
@@ -103,21 +122,17 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
             ),
             ElevatedButton(
               onPressed: () async {
-                // FirebaseAuthから現在のユーザーを取得
-                final currentUser = FirebaseAuth.instance.currentUser;
-                final userName = currentUser != null ? currentUser.displayName ?? '匿名ユーザー' : '匿名ユーザー';
                 // コメントをFirestoreに保存
                 await FirestoreService().addCommentToGoal(
                   widget.goal.id,
                   commentController.text,
-                  userName, // 現在のユーザー名を使用
+                  username, // 取得したユーザー名を使用
                 );
                 // コメント追加後、入力フィールドをクリア
                 commentController.clear();
               },
               child: Text('コメントを追加'),
             ),
-
             // コメントリスト
             Expanded(
               child: StreamBuilder<List<Comment>>(
