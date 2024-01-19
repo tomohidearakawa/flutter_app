@@ -24,10 +24,6 @@ class BasePage extends StatelessWidget {
             onPressed: () => Navigator.pushReplacementNamed(context, '/my_page'),
           ),
           IconButton(
-            icon: Icon(Icons.category),
-            onPressed: () => Navigator.pushReplacementNamed(context, '/work'),
-          ),
-          IconButton(
             icon: Icon(Icons.login),
             onPressed: () => Navigator.pushReplacementNamed(context, '/login'),
           ),
@@ -55,8 +51,11 @@ class MyApp extends StatelessWidget {
         '/my_page': (context) => BasePage(child: MyPage()),
         '/login': (context) => BasePage(child: LoginPage()),
         '/signup': (context) => BasePage(child: SignUpPage()),
-        '/work': (context) => BasePage(child: WorkCategoryPage(category: '仕事')),
-        //'/study': (context) => BasePage(child: StudyCategoryPage(category: '勉強')),
+
+        '/book': (context) => BasePage(child: WorkCategoryPage(category: 'book')),
+        '/programming': (context) => BasePage(child: WorkCategoryPage(category: 'programming')),
+        '/serach': (context) => BasePage(child: WorkCategoryPage(category: 'serach')),
+        '/other': (context) => BasePage(child: WorkCategoryPage(category: 'other')),
         // 他のカテゴリーページも同様に登録
       },
       initialRoute: '/signup',
