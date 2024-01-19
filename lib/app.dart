@@ -3,6 +3,7 @@ import 'prsenter/pages/todo_list_page.dart';
 import 'prsenter/pages/login_page.dart';
 import 'prsenter/pages/my_page.dart';
 import 'prsenter/pages/signup_page.dart';
+import 'prsenter/pages/category_page.dart';
 
 class BasePage extends StatelessWidget {
   final Widget child;
@@ -46,10 +47,16 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       routes: {
-        '/': (context) => BasePage(child: ToDoList()),
+        '/': (context) => BasePage(child: GoalAndToDoList()),
         '/my_page': (context) => BasePage(child: MyPage()),
         '/login': (context) => BasePage(child: LoginPage()),
         '/signup': (context) => BasePage(child: SignUpPage()),
+
+        '/book': (context) => BasePage(child: WorkCategoryPage(category: 'book')),
+        '/programming': (context) => BasePage(child: WorkCategoryPage(category: 'programming')),
+        '/serach': (context) => BasePage(child: WorkCategoryPage(category: 'serach')),
+        '/other': (context) => BasePage(child: WorkCategoryPage(category: 'other')),
+        // 他のカテゴリーページも同様に登録
       },
       initialRoute: '/signup',
     );

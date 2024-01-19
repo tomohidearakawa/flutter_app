@@ -35,8 +35,24 @@ class _MyPageState extends State<MyPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('マイページ'),
+        title: Text('$username ページ'),
         actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.category),
+            onPressed: () => Navigator.pushReplacementNamed(context, '/book'),
+          ),
+          IconButton(
+            icon: Icon(Icons.category),
+            onPressed: () => Navigator.pushReplacementNamed(context, '/programming'),
+          ),
+          IconButton(
+            icon: Icon(Icons.category),
+            onPressed: () => Navigator.pushReplacementNamed(context, '/serach'),
+          ),
+          IconButton(
+            icon: Icon(Icons.category),
+            onPressed: () => Navigator.pushReplacementNamed(context, '/other'),
+          ),
           IconButton(
             icon: Icon(Icons.exit_to_app),
             onPressed: logout,
