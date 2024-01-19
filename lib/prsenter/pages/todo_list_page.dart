@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; // Firestoreのインポート
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'package:uuid/uuid.dart';
 
 class ToDoItem {
   String id;
@@ -86,11 +87,34 @@ class GoalItem {
   }
 }
 
+// class Comment {
+//   final String id;
+//   final String userName;
+//   final String commentText;
+//   final DateTime timestamp;
+
+//   Comment({
+//     required this.id,
+//     required this.userName,
+//     required this.commentText,
+//     required this.timestamp,
+//   });
+
+//   factory Comment.fromMap(Map<String, dynamic> map) {
+//     return Comment(
+//       id: map['id'] ?? '', // null チェックとデフォルト値の設定
+//       userName: map['userName'] ?? '不明',
+//       commentText: map['commentText'] ?? '', // Firestoreのフィールド名に注意
+//       timestamp: (map['timestamp'] as Timestamp).toDate(),
+//     );
+//   }
+// }
+
 class Comment {
-  final String id; // コメントの一意のID
-  final String userName; // コメントしたユーザーの名前
-  final String commentText; // コメントのテキスト
-  final DateTime timestamp; // コメントのタイムスタンプ
+  final String id;
+  final String userName;
+  final String commentText;
+  final DateTime timestamp;
 
   Comment({
     required this.id,
@@ -166,19 +190,21 @@ class FirestoreService {
         .map((snapshot) => snapshot.docs.map((doc) => GoalItem.fromDocument(doc)).toList());
   }
 
-  Future<void> addCommentToGoal(String goalId, String comment, String userName) async {
+  Future<void> addCommentToGoal(String goalId, String commentText, String userName) async {
+    var uuid = Uuid();
     try {
       await FirebaseFirestore.instance.collection('goals').doc(goalId).update({
         'comments': FieldValue.arrayUnion([
           {
-            'comment': comment,
+            'id': uuid.v4(), // UUIDを生成
             'userName': userName,
+            'commentText': commentText,
             'timestamp': Timestamp.now(),
           },
         ]),
       });
     } catch (e) {
-      print('コメントの追加中にエラーが発生しました: $e'); // エラーメッセージを出力
+      print('コメントの追加中にエラーが発生しました: $e');
     }
   }
 
@@ -201,19 +227,14 @@ class FirestoreService {
 
       if (data != null && data.containsKey('comments')) {
         final commentsData = List<Map<String, dynamic>>.from(data['comments']);
-        final comments = await Future.wait(commentsData.map((commentData) async {
-          // コメントデータからCommentオブジェクトを生成
-          final userId = commentData['userId'] as String?;
-          final userName = userId != null ? (await getUserName(userId)) ?? '不明' : '不明'; // ユーザー名が null の場合、'不明' をデフォルト値として設定
+        return commentsData.map((commentData) {
           return Comment(
-            id: commentData['id'],
-            userName: userName,
-            commentText: commentData['commentText'],
-            timestamp: commentData['timestamp'].toDate(),
+            id: commentData['id'] ?? '', // null チェックとデフォルト値の設定
+            userName: commentData['userName'] ?? '不明',
+            commentText: commentData['commentText'] ?? '',
+            timestamp: (commentData['timestamp'] as Timestamp).toDate(),
           );
-        }));
-
-        return comments;
+        }).toList();
       } else {
         return <Comment>[];
       }
