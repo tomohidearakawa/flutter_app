@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_linkify/flutter_linkify.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_app/prsenter/pages/todo_list_page.dart'; // GoalItem クラスのインポート
 import 'package:intl/intl.dart';
 
@@ -104,7 +106,6 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
                 // FirebaseAuthから現在のユーザーを取得
                 final currentUser = FirebaseAuth.instance.currentUser;
                 final userName = currentUser != null ? currentUser.displayName ?? '匿名ユーザー' : '匿名ユーザー';
-
                 // コメントをFirestoreに保存
                 await FirestoreService().addCommentToGoal(
                   widget.goal.id,
@@ -134,8 +135,27 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
                         final comment = comments[index];
                         return ListTile(
                           title: Text(comment.userName),
-                          subtitle: Text(comment.commentText),
+                          subtitle: Linkify(
+                            onOpen: (link) async {
+                              if (await canLaunch(link.url)) {
+                                await launch(link.url);
+                              } else {
+                                print('Could not launch ${link.url}');
+                              }
+                            },
+                            text: comment.commentText,
+                            style: TextStyle(color: Colors.black),
+                            linkStyle: TextStyle(color: Colors.blue),
+                          ),
                           trailing: Text(DateFormat('yyyy/MM/dd HH:mm').format(comment.timestamp)),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => CommentDetailPage(comment: comment),
+                              ),
+                            );
+                          },
                         );
                       },
                     );
@@ -145,6 +165,34 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
                 },
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class CommentDetailPage extends StatelessWidget {
+  final Comment comment;
+
+  CommentDetailPage({required this.comment});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('コメント詳細'),
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text('ユーザー名: ${comment.userName}'),
+            SizedBox(height: 8.0),
+            Text('コメント: ${comment.commentText}'),
+            SizedBox(height: 8.0),
+            Text('投稿日時: ${DateFormat('yyyy/MM/dd HH:mm').format(comment.timestamp)}'),
           ],
         ),
       ),
