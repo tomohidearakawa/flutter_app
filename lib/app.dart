@@ -56,7 +56,6 @@ class MyApp extends StatelessWidget {
         '/programming': (context) => BasePage(child: WorkCategoryPage(category: 'programming')),
         '/serach': (context) => BasePage(child: WorkCategoryPage(category: 'serach')),
         '/other': (context) => BasePage(child: WorkCategoryPage(category: 'other')),
-        // 他のカテゴリーページも同様に登録
       },
       initialRoute: '/signup',
     );

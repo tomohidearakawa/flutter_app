@@ -44,8 +44,8 @@ class GoalItem {
   List<ToDoItem> todos;
   DateTime? dueDate;
   String? comment;
-  String? userId; // ユーザーIDを追加
-  String? userName; // ユーザー名を追加
+  String? userId;
+  String? userName;
 
   GoalItem({
     required this.id,
@@ -54,8 +54,8 @@ class GoalItem {
     this.todos = const [],
     this.dueDate,
     this.comment,
-    this.userId, // ユーザーIDを受け取る引数を追加
-    this.userName, // ユーザー名を受け取る引数を追加
+    this.userId,
+    this.userName,
   });
 
   factory GoalItem.fromDocument(DocumentSnapshot doc) {
@@ -86,29 +86,6 @@ class GoalItem {
     };
   }
 }
-
-// class Comment {
-//   final String id;
-//   final String userName;
-//   final String commentText;
-//   final DateTime timestamp;
-
-//   Comment({
-//     required this.id,
-//     required this.userName,
-//     required this.commentText,
-//     required this.timestamp,
-//   });
-
-//   factory Comment.fromMap(Map<String, dynamic> map) {
-//     return Comment(
-//       id: map['id'] ?? '', // null チェックとデフォルト値の設定
-//       userName: map['userName'] ?? '不明',
-//       commentText: map['commentText'] ?? '', // Firestoreのフィールド名に注意
-//       timestamp: (map['timestamp'] as Timestamp).toDate(),
-//     );
-//   }
-// }
 
 class Comment {
   final String id;
@@ -169,15 +146,15 @@ class FirestoreService {
 
   // 目標を追加
   Future<void> addGoalItem(String title, List<String> categories, DateTime dueDate, String comment, String userId) async {
-    final userName = await getUserName(userId); // ユーザー名を取得
+    final userName = await getUserName(userId);
     await _goalsCollection.add({
       'title': title,
       'categories': categories,
       'dueDate': dueDate,
       'comment': comment,
       'userId': userId,
-      'userName': userName, // ユーザー名を保存
-      'todos': [], // 空の ToDo アイテムリストを追加
+      'userName': userName,
+      'todos': [],
     });
   }
 
@@ -196,7 +173,7 @@ class FirestoreService {
       await FirebaseFirestore.instance.collection('goals').doc(goalId).update({
         'comments': FieldValue.arrayUnion([
           {
-            'id': uuid.v4(), // UUIDを生成
+            'id': uuid.v4(),
             'userName': userName,
             'commentText': commentText,
             'timestamp': Timestamp.now(),
@@ -573,219 +550,3 @@ class _GoalAndToDoListState extends State<GoalAndToDoList> {
     );
   }
 }
-
-// class GoalAndToDoList extends StatefulWidget {
-//   @override
-//   _GoalAndToDoListState createState() => _GoalAndToDoListState();
-// }
-
-// class _GoalAndToDoListState extends State<GoalAndToDoList> {
-//   final FirestoreService _firestoreService = FirestoreService();
-//   TextEditingController goalController = TextEditingController();
-//   TextEditingController todoController = TextEditingController();
-//   TextEditingController commentController = TextEditingController();
-//   String selectedCategory = Categories.predefinedCategories.first;
-//   DateTime selectedDueDate = DateTime.now();
-
-//   Future<void> _selectDate(BuildContext context) async {
-//     final DateTime? picked = await showDatePicker(
-//       context: context,
-//       initialDate: selectedDueDate,
-//       firstDate: DateTime(2020),
-//       lastDate: DateTime(2025),
-//     );
-//     if (picked != null && picked != selectedDueDate) {
-//       setState(() {
-//         selectedDueDate = picked;
-//       });
-//     }
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
-
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text('目標とToDoリスト'),
-//       ),
-//       body: Column(
-//         children: <Widget>[
-//           TextField(
-//             controller: goalController,
-//             decoration: InputDecoration(hintText: '新しい目標を追加'),
-//           ),
-//           DropdownButton<String>(
-//             value: selectedCategory,
-//             onChanged: (String? newValue) {
-//               setState(() {
-//                 selectedCategory = newValue!;
-//               });
-//             },
-//             items: Categories.predefinedCategories.map<DropdownMenuItem<String>>((String value) {
-//               return DropdownMenuItem<String>(
-//                 value: value,
-//                 child: Text(value),
-//               );
-//             }).toList(),
-//           ),
-//           ListTile(
-//             title: Text("完了予定日: ${DateFormat('yyyy/MM/dd').format(selectedDueDate)}"),
-//             trailing: Icon(Icons.calendar_today),
-//             onTap: () => _selectDate(context),
-//           ),
-//           TextField(
-//             controller: commentController,
-//             decoration: InputDecoration(hintText: 'コメント'),
-//           ),
-//           ElevatedButton(
-//             onPressed: () {
-//               if (goalController.text.isNotEmpty) {
-//                 _firestoreService.addGoalItem(
-//                   goalController.text,
-//                   [selectedCategory],
-//                   selectedDueDate,
-//                   commentController.text,
-//                   userId,
-//                 );
-//                 goalController.clear();
-//                 commentController.clear();
-//               }
-//             },
-//             child: Text('目標を追加'),
-//           ),
-//           Expanded(
-//             child: StreamBuilder<List<GoalItem>>(
-//               stream: _firestoreService.getGoalItems(userId),
-//               builder: (context, snapshot) {
-//                 if (snapshot.connectionState == ConnectionState.waiting) {
-//                   return CircularProgressIndicator();
-//                 }
-//                 if (snapshot.hasError) {
-//                   return Text('エラーが発生しました: ${snapshot.error}');
-//                 }
-//                 if (snapshot.hasData) {
-//                   final goals = snapshot.data!;
-//                   return ListView.builder(
-//                     itemCount: goals.length,
-//                     itemBuilder: (context, index) {
-//                       final goal = goals[index];
-//                       return ExpansionTile(
-//                         title: Text(goal.title),
-//                         subtitle: Text('カテゴリー: ${goal.categories.join(', ')}\n完了予定日: ${DateFormat('yyyy/MM/dd').format(goal.dueDate!)}\nコメント: ${goal.comment ?? ''}'),
-//                         children: goal.todos.map((todo) {
-//                           return ListTile(
-//                             title: Text(todo.title),
-//                             leading: Checkbox(
-//                               value: todo.completed,
-//                               onChanged: (bool? value) {
-//                                 _firestoreService.toggleCompleted(todo);
-//                               },
-//                             ),
-//                             trailing: IconButton(
-//                               icon: Icon(Icons.delete),
-//                               onPressed: () {
-//                                 _firestoreService.deleteTodoItem(todo.id);
-//                               },
-//                             ),
-//                           );
-//                         }).toList(),
-//                         trailing: IconButton(
-//                           icon: Icon(Icons.add),
-//                           onPressed: () {
-//                             // ToDoを追加する処理
-//                           },
-//                         ),
-//                       );
-//                     },
-//                   );
-//                 } else {
-//                   return Text('データがありません。');
-//                 }
-//               },
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
-
-
-
-
-// class ToDoList extends StatefulWidget {
-//   @override
-//   _ToDoListState createState() => _ToDoListState();
-// }
-
-// class _ToDoListState extends State<ToDoList> {
-//   final FirestoreService _firestoreService = FirestoreService();
-//   TextEditingController todoController = TextEditingController();
-
-//   @override
-//   Widget build(BuildContext context) {
-//     String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text('To-Doリスト'),
-//       ),
-//       body: Column(
-//         children: <Widget>[
-//           TextField(
-//             controller: todoController,
-//             decoration: InputDecoration(
-//               hintText: '新しいタスクを追加',
-//             ),
-//           ),
-//           ElevatedButton(
-//             onPressed: () {
-//               if (todoController.text.isNotEmpty) {
-//                 // ログイン中のユーザーIDを取得
-//                 String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
-//                 _firestoreService.addTodoItem(todoController.text, userId);
-//                 todoController.clear();
-//               }
-//             },
-//             child: Text('追加'),
-//           ),
-//           Expanded(
-//             child: StreamBuilder<List<ToDoItem>>(
-//               stream: _firestoreService.getTodoItems(userId), // ユーザーIDを使用してToDoアイテムを取得
-//               builder: (context, snapshot) {
-//                 if (snapshot.hasData) {
-//                   final todos = snapshot.data!;
-//                   return ListView.builder(
-//                     itemCount: todos.length,
-//                     itemBuilder: (context, index) {
-//                       final item = todos[index];
-//                       return ListTile(
-//                         title: Text(item.title),
-//                         leading: Checkbox(
-//                           value: item.completed,
-//                           onChanged: (bool? value) {
-//                             _firestoreService.toggleCompleted(item);
-//                           },
-//                         ),
-//                         trailing: IconButton(
-//                           icon: Icon(Icons.delete),
-//                           onPressed: () {
-//                             _firestoreService.deleteTodoItem(item.id);
-//                           },
-//                         ),
-//                       );
-//                     },
-//                   );
-//                 } else if (snapshot.hasError) {
-//                   return Text('エラーが発生しました！');
-//                 } else {
-//                   return CircularProgressIndicator();
-//                 }
-//               },
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }

@@ -35,11 +35,9 @@ class SignUpPage extends StatelessWidget {
                   email: emailController.text,
                   password: passwordController.text,
                 );
-                // Firestoreにユーザー名を保存
                 await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
                   'username': usernameController.text,
                 });
-                // 登録成功後、トップページに遷移
                 Navigator.pushReplacementNamed(context, '/');
               } on FirebaseAuthException catch (e) {
                 ScaffoldMessenger.of(context).showSnackBar(
