@@ -33,8 +33,7 @@ class ToDoItem {
       'title': title,
       'completed': completed,
     };
-}
-
+  }
 }
 
 class GoalItem {
